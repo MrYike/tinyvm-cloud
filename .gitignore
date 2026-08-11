@@ -1,0 +1,4 @@
+Windows11-arm64.iso
+*.qcow2
+*.log
+.env*
