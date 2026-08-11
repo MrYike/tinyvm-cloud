@@ -1,0 +1,19 @@
+{
+  "name": "TinyVM Cloud",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "forwardPorts": [6080],
+  "portsAttributes": {
+    "6080": {
+      "label": "TinyVM Windows desktop",
+      "onAutoForward": "notify",
+      "visibility": "private",
+      "protocol": "http"
+    }
+  }
+}
