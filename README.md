@@ -1,31 +1,22 @@
 # TinyVM Cloud
 
-Experimental Windows 11 ARM64 VM that runs inside a GitHub Codespace and displays through noVNC in a browser.
+A lightweight Linux desktop that runs in a GitHub Codespace and opens in your browser through noVNC.
 
 ## Start
 
-1. Create a Codespace for this repository.
-2. Wait for the setup script to finish.
-3. Upload Microsoft's official Windows 11 ARM64 ISO to the repository root and name it `Windows11-arm64.iso`.
-4. Run `bash scripts/start-vm.sh` in the Codespace terminal.
-5. Open port **6080** from the Codespace **Ports** panel.
+1. Open or rebuild the Codespace for this repository.
+2. Wait for setup to finish. The Linux desktop starts automatically.
+3. Open port **6080**, or use the existing TinyVM Cloud link.
+4. If noVNC shows a **Connect** button, click it.
 
-The virtual disk is stored at `~/tinyvm-data/windows.qcow2`. It has 64 GB virtual capacity but grows only as data is written.
+To restart manually, run `bash scripts/start-vm.sh`.
 
-## Windows Setup
+## What changed
 
-If Setup reports that the PC does not meet Windows 11 requirements, press **Shift-F10** and run:
-
-```bat
-reg add HKLM\SYSTEM\Setup\LabConfig /v BypassTPMCheck /t REG_DWORD /d 1 /f
-reg add HKLM\SYSTEM\Setup\LabConfig /v BypassSecureBootCheck /t REG_DWORD /d 1 /f
-```
-
-Close Command Prompt, go back one screen, and continue. Choose **I don't have a product key** if you are evaluating an unactivated installation.
+The project now uses XFCE Linux instead of Windows and QEMU. It does not need a Windows license, Windows ISO, or virtual disk. The existing port 6080/noVNC link is unchanged.
 
 ## Limits
 
-- Software emulation is extremely slow.
-- Codespaces free usage and storage are monthly quotas.
-- The private forwarded port requires the repository owner's GitHub login.
-- Supabase and Vercel can provide a launch portal, but the VM itself runs in Codespaces.
+- GitHub Codespaces free usage and storage are monthly quotas.
+- The Codespace stops after inactivity and must be started again.
+- The private desktop link may require the repository owner's GitHub sign-in.
