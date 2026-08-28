@@ -1,6 +1,13 @@
 {
-  "name": "TinyVM Linux Cloud",
+  "name": "Homework Streaming Desktop",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true,
+      "dockerDashComposeVersion": "v2"
+    }
+  },
   "hostRequirements": {
     "cpus": 2,
     "memory": "8gb",
@@ -8,12 +15,12 @@
   },
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "postStartCommand": "bash scripts/start-vm.sh",
-  "forwardPorts": [6080],
+  "forwardPorts": [3000],
   "portsAttributes": {
-    "6080": {
-      "label": "TinyVM Linux desktop",
+    "3000": {
+      "label": "Homework audio/video desktop",
       "onAutoForward": "notify",
-      "visibility": "private",
+      "visibility": "public",
       "protocol": "http"
     }
   }
