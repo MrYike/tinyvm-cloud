@@ -33,7 +33,7 @@ nohup x11vnc -display "$DISPLAY_NUM" -forever -shared -rfbauth "$PASSFILE" -rfbp
   >"$DATA/x11vnc.log" 2>&1 &
 echo $! >"$DATA/x11vnc.pid"
 
-nohup websockify --web=/usr/share/novnc "$WEB_PORT" "127.0.0.1:$VNC_PORT" \
+nohup websockify --heartbeat=30 --web=/usr/share/novnc "$WEB_PORT" "127.0.0.1:$VNC_PORT" \
   >"$DATA/novnc.log" 2>&1 &
 echo $! >"$DATA/novnc.pid"
 

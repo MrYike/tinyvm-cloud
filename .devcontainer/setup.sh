@@ -3,7 +3,7 @@ set -euo pipefail
 
 sudo apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  xfce4 xfce4-terminal xfce4-goodies dbus-x11 xvfb x11vnc novnc websockify \
+  xfce4 xfce4-terminal xfce4-goodies dbus-x11 xvfb x11vnc novnc websockify epiphany-browser \
   thunar mousepad xarchiver gvfs gvfs-backends fonts-liberation \
   wget gnupg ca-certificates
 
