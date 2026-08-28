@@ -1,5 +1,5 @@
 {
-  "name": "TinyVM Cloud",
+  "name": "TinyVM Linux Cloud",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "hostRequirements": {
     "cpus": 2,
@@ -7,10 +7,11 @@
     "storage": "32gb"
   },
   "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postStartCommand": "bash scripts/start-vm.sh",
   "forwardPorts": [6080],
   "portsAttributes": {
     "6080": {
-      "label": "TinyVM Windows desktop",
+      "label": "TinyVM Linux desktop",
       "onAutoForward": "notify",
       "visibility": "private",
       "protocol": "http"
