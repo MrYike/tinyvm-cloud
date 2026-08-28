@@ -6,6 +6,12 @@ DATA="$HOME/tinyvm-data"
 DISPLAY_NUM=":1"
 VNC_PORT="5901"
 WEB_PORT="6080"
+PASSFILE="$DATA/vnc.pass"
+
+if [[ ! -f "$PASSFILE" ]]; then
+  echo "VNC password is not configured. Run: bash .devcontainer/setup.sh"
+  exit 1
+fi
 
 bash "$ROOT/scripts/stop-vm.sh" >/dev/null 2>&1 || true
 mkdir -p "$DATA"
@@ -23,7 +29,7 @@ nohup env DISPLAY="$DISPLAY_NUM" dbus-run-session -- startxfce4 \
   >"$DATA/desktop.log" 2>&1 &
 echo $! >"$DATA/desktop.pid"
 
-nohup x11vnc -display "$DISPLAY_NUM" -forever -shared -nopw -rfbport "$VNC_PORT" \
+nohup x11vnc -display "$DISPLAY_NUM" -forever -shared -rfbauth "$PASSFILE" -rfbport "$VNC_PORT" \
   >"$DATA/x11vnc.log" 2>&1 &
 echo $! >"$DATA/x11vnc.pid"
 
