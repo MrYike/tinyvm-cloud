@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DATA="$HOME/tinyvm-data"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DATA="$ROOT/persistent"
 for name in novnc x11vnc desktop xvfb; do
   pidfile="$DATA/$name.pid"
   if [[ -f "$pidfile" ]]; then
