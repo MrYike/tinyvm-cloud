@@ -30,7 +30,7 @@ chmod +x scripts/start-vm.sh scripts/stop-vm.sh
 
 PASSFILE="$HOME/tinyvm-data/vnc.pass"
 if [[ ! -f "$PASSFILE" ]]; then
-  VNC_PASSWORD="$(head -c 12 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 12)"
+  VNC_PASSWORD="123456"
   x11vnc -storepasswd "$VNC_PASSWORD" "$PASSFILE" >/dev/null
   printf '\nVNC password (needed to open the desktop): %s\n(saved to %s)\n' "$VNC_PASSWORD" "$PASSFILE"
 fi
