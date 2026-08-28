@@ -10,7 +10,7 @@ WEB_PORT="6080"
 bash "$ROOT/scripts/stop-vm.sh" >/dev/null 2>&1 || true
 mkdir -p "$DATA"
 
-nohup Xvfb "$DISPLAY_NUM" -screen 0 1366x768x24 -ac +extension GLX +render -noreset \
+nohup Xvfb "$DISPLAY_NUM" -screen 0 1920x1080x24 -ac +extension GLX +render -noreset \
   >"$DATA/xvfb.log" 2>&1 &
 echo $! >"$DATA/xvfb.pid"
 
