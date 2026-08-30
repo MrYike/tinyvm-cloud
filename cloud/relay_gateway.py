@@ -1,7 +1,10 @@
-import asyncio
+import asyncio, os
+from urllib.parse import urlencode
 from aiohttp import ClientSession, WSMsgType, web
 
 UPSTREAM='http://127.0.0.1:3000'
+FILE_UPSTREAM='http://127.0.0.1:8765/files'
+FILE_SECRET=os.environ.get('FILE_BRIDGE_TOKEN','')
 HOP={'connection','keep-alive','proxy-authenticate','proxy-authorization','te','trailers','transfer-encoding','upgrade','content-length','x-frame-options','content-security-policy'}
 
 async def valid(token):
@@ -26,8 +29,14 @@ async def relay_ws(request):
 
 async def relay_http(request):
     headers={k:v for k,v in request.headers.items() if k.lower() not in HOP and k.lower()!='host'}
+    target=UPSTREAM+request.rel_url.path_qs
+    if request.path=='/cloud-files':
+        if not await valid(request.query.get('token','')):raise web.HTTPForbidden(text='Protected by Homework')
+        query=request.query.copy();query.pop('token',None)
+        target=FILE_UPSTREAM+('?' + query_string if (query_string:=urlencode(list(query.items()))) else '')
+        headers['Authorization']='Bearer '+FILE_SECRET
     async with ClientSession() as client:
-        async with client.request(request.method,UPSTREAM+request.rel_url.path_qs,headers=headers,data=await request.read(),allow_redirects=False) as response:
+        async with client.request(request.method,target,headers=headers,data=await request.read(),allow_redirects=False) as response:
             body=await response.read();out={k:v for k,v in response.headers.items() if k.lower() not in HOP};return web.Response(status=response.status,body=body,headers=out)
 
 async def handler(request):
