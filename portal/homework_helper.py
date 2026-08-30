@@ -39,10 +39,34 @@ def run_local_chat(payload):
     answer=model.create_chat_completion(messages=payload.get("messages",[]),max_tokens=2048,temperature=.7)
     return {"message":answer["choices"][0]["message"]["content"] or "No response."}
 
+def sync_files():
+    remote = {item["path"]: item for item in request("/api/files").get("files", [])}
+    local = {name:(path, hashlib.sha256(path.read_bytes()).hexdigest()) for path,name in relative_files()}
+    for name,item in remote.items():
+        if name not in local or local[name][1] != item.get("sha256"):
+            result = request("/api/files?action=download&path=" + urllib.parse.quote(name))
+            destination = LOCAL_FOLDER / name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(base64.b64decode(result["content"]))
+            print("Downloaded", name)
+    for name,(path,digest) in local.items():
+        if name not in remote or remote[name].get("sha256") != digest:
+            content = path.read_bytes()
+            if len(content) > MAX_BYTES:
+                print("Skipped (over 4 MB):", name); continue
+            request("/api/files", {"path":name,"content":base64.b64encode(content).decode()})
+            print("Uploaded", name)
+
 def helper_loop():
-    print("Local helper online. Keep Thonny running; no device key is required.")
+    print("Helper connected. Files now sync automatically while Thonny stays open.")
+    next_sync = 0
     while True:
         try:
+            now = time.time()
+            if now >= next_sync:
+                sync_files()
+                next_sync = now + 15
+            request("/api/helper", {"heartbeat": True})
             packet=request("/api/helper")
             if not packet: time.sleep(2); continue
             job=packet["job"]
@@ -62,27 +86,9 @@ def main():
     LOCAL_FOLDER.mkdir(parents=True, exist_ok=True)
     print("Starting Homework Manager...")
     request("/api/login", {"password": PASSWORD})
-    remote = {item["path"]: item for item in request("/api/files").get("files", [])}
-    local = {name:(path, hashlib.sha256(path.read_bytes()).hexdigest()) for path,name in relative_files()}
-    for name,item in remote.items():
-        if name not in local or local[name][1] != item.get("sha256"):
-            result = request("/api/files?action=download&path=" + urllib.parse.quote(name))
-            destination = LOCAL_FOLDER / name
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            destination.write_bytes(base64.b64decode(result["content"]))
-            print("Downloaded", name)
-    for name,(path,digest) in local.items():
-        if name not in remote or remote[name].get("sha256") != digest:
-            content = path.read_bytes()
-            if len(content) > MAX_BYTES:
-                print("Skipped (over 4 MB):", name); continue
-            request("/api/files", {"path":name,"content":base64.b64encode(content).decode()})
-            print("Uploaded", name)
-    print("Sync complete. Folder:", LOCAL_FOLDER)
     helper_loop()
 
 if __name__ == "__main__":
     try: main()
     except urllib.error.HTTPError as error: print("CloudDrive error:", error.read().decode(errors="replace"))
     except Exception as error: print("CloudDrive error:", error)
-

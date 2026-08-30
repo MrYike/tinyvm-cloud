@@ -9,3 +9,7 @@ export async function recentLoginEvents(limit=30){const rows=await command(['LRA
 const JOBS_KEY='homework:helper:jobs';
 export async function nextHelperJob(){const raw=await command(['RPOP',JOBS_KEY]);return raw?JSON.parse(raw):null}
 export async function saveHelperResult(id,value){await command(['SET',`homework:helper:result:${id}`,JSON.stringify(value),'EX','3600'])}
+
+const HELPER_HEARTBEAT_KEY='homework:helper:heartbeat';
+export async function saveHelperHeartbeat(value){await command(['SET',HELPER_HEARTBEAT_KEY,JSON.stringify(value),'EX','120'])}
+export async function getHelperHeartbeat(){const raw=await command(['GET',HELPER_HEARTBEAT_KEY]);return raw?JSON.parse(raw):null}
