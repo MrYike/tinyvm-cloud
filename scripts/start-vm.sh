@@ -39,6 +39,9 @@ if [[ -z "$FIREFOX_BINARY" ]]; then
 fi
 [[ -n "$FIREFOX_BINARY" ]] || { echo "Firefox was downloaded but its launcher was not found."; exit 1; }
 ln -sfn "/config/${FIREFOX_BINARY#"$CONFIG/"}" "$CONFIG/firefox-launcher"
+FIREFOX_ROOT="$(dirname "$FIREFOX_BINARY")"
+mkdir -p "$FIREFOX_ROOT/distribution"
+printf '%s\n' '{"policies":{"Preferences":{"media.eme.enabled":{"Value":true,"Status":"locked"},"media.gmp-widevinecdm.enabled":{"Value":true,"Status":"locked"},"media.mediasource.enabled":{"Value":true,"Status":"locked"},"media.av1.enabled":{"Value":true,"Status":"locked"}}}}' > "$FIREFOX_ROOT/distribution/policies.json"
 mkdir -p "$CONFIG/Desktop"
 cat > "$CONFIG/Desktop/firefox.desktop" <<'EOF'
 [Desktop Entry]
