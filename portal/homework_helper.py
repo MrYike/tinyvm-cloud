@@ -17,11 +17,10 @@ def request(path, payload=None, allow_non_json=False):
     with opener.open(req, timeout=1800) as response:
         body = response.read()
         if response.status == 204 or not body.strip(): return None
-        content_type = response.headers.get("Content-Type", "")
-        if "json" not in content_type.lower():
+        try: return json.loads(body.decode())
+        except (UnicodeDecodeError, json.JSONDecodeError):
             if allow_non_json and 200 <= response.status < 300: return None
-            raise RuntimeError("Homework returned an unexpected response. Please download the newest helper.")
-        return json.loads(body.decode())
+            raise RuntimeError("Homework returned an unreadable response for " + path)
 
 def run_local_chat(payload):
     try: from llama_cpp import Llama
