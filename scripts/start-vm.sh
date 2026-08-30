@@ -3,11 +3,18 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG="$ROOT/persistent/webtop"
-mkdir -p "$CONFIG"
+mkdir -p "$CONFIG" "$CONFIG/CloudDrive"
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "Docker is not ready. Rebuild the Codespace container once."
   exit 1
+fi
+
+pkill -f "$ROOT/cloud/file_bridge.py" >/dev/null 2>&1 || true
+if [[ -n "${FILE_BRIDGE_TOKEN:-}" ]]; then
+  CLOUDDRIVE_ROOT="$CONFIG/CloudDrive" nohup python3 "$ROOT/cloud/file_bridge.py" >"$ROOT/file-bridge.log" 2>&1 &
+else
+  echo "CloudDrive helper is waiting for FILE_BRIDGE_TOKEN."
 fi
 
 docker rm -f homework-webtop >/dev/null 2>&1 || true

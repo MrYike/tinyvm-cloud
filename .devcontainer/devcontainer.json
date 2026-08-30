@@ -8,20 +8,12 @@
       "dockerDashComposeVersion": "v2"
     }
   },
-  "hostRequirements": {
-    "cpus": 2,
-    "memory": "8gb",
-    "storage": "32gb"
-  },
+  "hostRequirements": {"cpus": 2,"memory": "8gb","storage": "32gb"},
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "postStartCommand": "bash scripts/start-vm.sh",
-  "forwardPorts": [3000],
+  "forwardPorts": [3000,8765],
   "portsAttributes": {
-    "3000": {
-      "label": "Homework audio/video desktop",
-      "onAutoForward": "notify",
-      "visibility": "public",
-      "protocol": "http"
-    }
+    "3000": {"label": "Homework audio/video desktop","onAutoForward": "notify","visibility": "public","protocol": "http"},
+    "8765": {"label": "Homework CloudDrive bridge","onAutoForward": "silent","visibility": "public","protocol": "http"}
   }
 }
