@@ -2,6 +2,7 @@
 import base64, hashlib, http.cookiejar, json, pathlib, shutil, subprocess, sys, time, urllib.error, urllib.parse, urllib.request
 
 PORTAL_URL = "https://homework-study-work-app.vercel.app"
+PASSWORD = "123456"
 LOCAL_FOLDER = pathlib.Path.home() / "HomeworkCloudDrive"
 MAX_BYTES = 4 * 1024 * 1024
 MODEL_FOLDER = pathlib.Path.home() / "HomeworkLocalAI" / "models"
@@ -59,7 +60,8 @@ def relative_files():
 
 def main():
     LOCAL_FOLDER.mkdir(parents=True, exist_ok=True)
-    request("/api/login", {"password": input("Homework password: ")})
+    print("Starting Homework Manager...")
+    request("/api/login", {"password": PASSWORD})
     remote = {item["path"]: item for item in request("/api/files").get("files", [])}
     local = {name:(path, hashlib.sha256(path.read_bytes()).hexdigest()) for path,name in relative_files()}
     for name,item in remote.items():
@@ -83,3 +85,4 @@ if __name__ == "__main__":
     try: main()
     except urllib.error.HTTPError as error: print("CloudDrive error:", error.read().decode(errors="replace"))
     except Exception as error: print("CloudDrive error:", error)
+
