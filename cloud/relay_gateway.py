@@ -1,19 +1,18 @@
-import asyncio, hashlib, hmac, os, time
+import asyncio
 from aiohttp import ClientSession, WSMsgType, web
 
-SECRET=os.environ.get('FILE_BRIDGE_TOKEN','').encode()
 UPSTREAM='http://127.0.0.1:3000'
 HOP={'connection','keep-alive','proxy-authenticate','proxy-authorization','te','trailers','transfer-encoding','upgrade','content-length','x-frame-options','content-security-policy'}
 
-def valid(token):
+async def valid(token):
+    if len(token)!=64:return False
     try:
-        expiry,signature=token.split('.',1)
-        expected=hmac.new(SECRET,expiry.encode(),hashlib.sha256).hexdigest()
-        return bool(SECRET) and int(expiry)>=int(time.time()) and hmac.compare_digest(signature,expected)
+        async with ClientSession() as client:
+            async with client.get('https://homework-study-work-app.vercel.app/api/tunnel-validate',params={'token':token},timeout=10) as response:return response.status==200
     except Exception:return False
 
 async def relay_ws(request):
-    if not valid(request.query.get('token','')):raise web.HTTPForbidden(text='Protected by Homework')
+    if not await valid(request.query.get('token','')):raise web.HTTPForbidden(text='Protected by Homework')
     client=ClientSession(); browser=web.WebSocketResponse(heartbeat=20,compress=False);await browser.prepare(request)
     upstream=await client.ws_connect(UPSTREAM+request.path_qs,heartbeat=20,max_msg_size=0)
     async def pump(source,target):

@@ -17,3 +17,5 @@ export async function getHelperHeartbeat(){const raw=await command(['GET',HELPER
 const TUNNEL_KEY='homework:desktop:tunnel';
 export async function saveTunnel(value){await command(['SET',TUNNEL_KEY,JSON.stringify(value),'EX','86400'])}
 export async function getTunnel(){const raw=await command(['GET',TUNNEL_KEY]);return raw?JSON.parse(raw):null}
+export async function saveRelayTicket(hash){await command(['SET',`homework:relay:ticket:${hash}`,'1','EX','3600'])}
+export async function hasRelayTicket(hash){return Boolean(await command(['GET',`homework:relay:ticket:${hash}`]))}
