@@ -19,7 +19,9 @@ if [[ -n "${FILE_BRIDGE_TOKEN:-}" ]]; then
   cp "$ROOT/cloud/file_bridge.py" "$CONFIG/file_bridge.py"
   cp "$ROOT/cloud/relay_gateway.py" "$CONFIG/relay_gateway.py"
   docker exec -d -e FILE_BRIDGE_TOKEN="$FILE_BRIDGE_TOKEN" -e CLOUDDRIVE_ROOT=/config/CloudDrive homework-webtop /lsiopy/bin/python3 /config/file_bridge.py
-  docker exec homework-webtop /lsiopy/bin/python3 -m pip install --disable-pip-version-check --target /config/relay-libs aiohttp
+  if ! docker exec -e PYTHONPATH=/config/relay-libs homework-webtop /lsiopy/bin/python3 -c 'import aiohttp' 2>/dev/null; then
+    docker exec homework-webtop /lsiopy/bin/python3 -m pip install --disable-pip-version-check --target /config/relay-libs aiohttp
+  fi
   docker exec -d -e FILE_BRIDGE_TOKEN="$FILE_BRIDGE_TOKEN" -e PYTHONPATH=/config/relay-libs homework-webtop /lsiopy/bin/python3 /config/relay_gateway.py
 else
   echo "CloudDrive helper is waiting for FILE_BRIDGE_TOKEN."
@@ -27,7 +29,9 @@ fi
 
 if [[ ! -x "$CONFIG/firefox/firefox" ]]; then
   mkdir -p "$CONFIG/firefox-download"
-  curl -fL --retry 5 'https://download.mozilla.org/?product=firefox-latest&os=linux64&lang=en-US' -o "$CONFIG/firefox-download/firefox.tar.xz"
+  FIREFOX_VERSION="$(curl -fsS https://product-details.mozilla.org/1.0/firefox_versions.json | sed -n 's/.*"LATEST_FIREFOX_VERSION": *"\([^"]*\)".*/\1/p')"
+  [[ -n "$FIREFOX_VERSION" ]] || { echo "Could not determine the current Firefox version."; exit 1; }
+  curl -fL --retry 5 "https://download-installer.cdn.mozilla.net/pub/firefox/releases/$FIREFOX_VERSION/linux-x86_64/en-US/firefox-$FIREFOX_VERSION.tar.xz" -o "$CONFIG/firefox-download/firefox.tar.xz"
   tar -xJf "$CONFIG/firefox-download/firefox.tar.xz" -C "$CONFIG"
   rm -f "$CONFIG/firefox-download/firefox.tar.xz"
 fi
