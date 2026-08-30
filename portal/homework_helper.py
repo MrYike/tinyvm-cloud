@@ -15,8 +15,12 @@ def request(path, payload=None):
     data = None if payload is None else json.dumps(payload).encode()
     req = urllib.request.Request(PORTAL_URL + path, data=data, headers={"Content-Type":"application/json"})
     with opener.open(req, timeout=1800) as response:
-        if response.status == 204: return None
-        return json.loads(response.read().decode())
+        body = response.read()
+        if response.status == 204 or not body.strip(): return None
+        content_type = response.headers.get("Content-Type", "")
+        if "json" not in content_type.lower():
+            raise RuntimeError("Homework returned an unexpected response. Please download the newest helper.")
+        return json.loads(body.decode())
 
 def run_local_chat(payload):
     try: from llama_cpp import Llama
