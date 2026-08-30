@@ -10,16 +10,16 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 1
 fi
 
-pkill -f "$ROOT/cloud/file_bridge.py" >/dev/null 2>&1 || true
-if [[ -n "${FILE_BRIDGE_TOKEN:-}" ]]; then
-  CLOUDDRIVE_ROOT="$CONFIG/CloudDrive" nohup python3 "$ROOT/cloud/file_bridge.py" >"$ROOT/file-bridge.log" 2>&1 &
-else
-  echo "CloudDrive helper is waiting for FILE_BRIDGE_TOKEN."
-fi
-
 docker rm -f homework-webtop >/dev/null 2>&1 || true
 docker pull lscr.io/linuxserver/webtop:ubuntu-xfce
 
-docker run -d   --name homework-webtop   --restart unless-stopped   --shm-size=1gb   -p 3000:3000   -e PUID="$(id -u)"   -e PGID="$(id -g)"   -e TZ="Australia/Sydney"   -e TITLE="Homework"   -e START_DOCKER="false"   -e SELKIES_AUDIO_ENABLED="true"   -e SELKIES_MICROPHONE_ENABLED="false"   -e SELKIES_ENCODER="x264enc"   -e SELKIES_FRAMERATE="30"   -e SELKIES_H264_CRF="28"   -e SELKIES_USE_CPU="true"   -e SELKIES_IS_MANUAL_RESOLUTION_MODE="true"   -e SELKIES_MANUAL_WIDTH="1280"   -e SELKIES_MANUAL_HEIGHT="720"   -e SELKIES_AUDIO_BITRATE="128000"   -e SELKIES_SECOND_SCREEN="false"   -e SELKIES_ENABLE_SHARING="false"   -e FILE_MANAGER_PATH="/config/Downloads"   -v "$CONFIG:/config"   lscr.io/linuxserver/webtop:ubuntu-xfce
+docker run -d   --name homework-webtop   --restart unless-stopped   --shm-size=1gb   -p 3000:3000   -p 8765:8765   -e PUID="$(id -u)"   -e PGID="$(id -g)"   -e TZ="Australia/Sydney"   -e TITLE="Homework"   -e START_DOCKER="false"   -e SELKIES_AUDIO_ENABLED="true"   -e SELKIES_MICROPHONE_ENABLED="false"   -e SELKIES_ENCODER="x264enc"   -e SELKIES_FRAMERATE="30"   -e SELKIES_H264_CRF="28"   -e SELKIES_USE_CPU="true"   -e SELKIES_IS_MANUAL_RESOLUTION_MODE="true"   -e SELKIES_MANUAL_WIDTH="1280"   -e SELKIES_MANUAL_HEIGHT="720"   -e SELKIES_AUDIO_BITRATE="128000"   -e SELKIES_SECOND_SCREEN="false"   -e SELKIES_ENABLE_SHARING="false"   -e FILE_MANAGER_PATH="/config/Downloads"   -v "$CONFIG:/config"   lscr.io/linuxserver/webtop:ubuntu-xfce
+
+if [[ -n "${FILE_BRIDGE_TOKEN:-}" ]]; then
+  cp "$ROOT/cloud/file_bridge.py" "$CONFIG/file_bridge.py"
+  docker exec -d -e FILE_BRIDGE_TOKEN="$FILE_BRIDGE_TOKEN" -e CLOUDDRIVE_ROOT=/config/CloudDrive homework-webtop /lsiopy/bin/python3 /config/file_bridge.py
+else
+  echo "CloudDrive helper is waiting for FILE_BRIDGE_TOKEN."
+fi
 
 echo "Homework audio/video desktop started on port 3000."
