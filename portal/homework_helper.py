@@ -11,7 +11,7 @@ MODEL_URL = "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/q
 cookies = http.cookiejar.CookieJar()
 opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookies))
 
-def request(path, payload=None):
+def request(path, payload=None, allow_non_json=False):
     data = None if payload is None else json.dumps(payload).encode()
     req = urllib.request.Request(PORTAL_URL + path, data=data, headers={"Content-Type":"application/json"})
     with opener.open(req, timeout=1800) as response:
@@ -19,6 +19,7 @@ def request(path, payload=None):
         if response.status == 204 or not body.strip(): return None
         content_type = response.headers.get("Content-Type", "")
         if "json" not in content_type.lower():
+            if allow_non_json and 200 <= response.status < 300: return None
             raise RuntimeError("Homework returned an unexpected response. Please download the newest helper.")
         return json.loads(body.decode())
 
@@ -70,14 +71,14 @@ def helper_loop():
             if now >= next_sync:
                 sync_files()
                 next_sync = now + 15
-            request("/api/helper", {"heartbeat": True})
-            packet=request("/api/helper")
+            request("/api/helper", {"heartbeat": True}, allow_non_json=True)
+            packet=request("/api/helper", allow_non_json=True)
             if not packet: time.sleep(2); continue
             job=packet["job"]
             try:
                 result=run_local_chat(job.get("payload",{})) if job.get("type")=="chat" else {"error":"Unsupported local job type"}
-                request("/api/helper",{"id":job["id"],"result":result})
-            except Exception as error: request("/api/helper",{"id":job["id"],"error":str(error)})
+                request("/api/helper",{"id":job["id"],"result":result},allow_non_json=True)
+            except Exception as error: request("/api/helper",{"id":job["id"],"error":str(error)},allow_non_json=True)
         except Exception as error:
             print("Waiting for Homework:",error); time.sleep(5)
 
