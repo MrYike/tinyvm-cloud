@@ -13,3 +13,7 @@ export async function saveHelperResult(id,value){await command(['SET',`homework:
 const HELPER_HEARTBEAT_KEY='homework:helper:heartbeat';
 export async function saveHelperHeartbeat(value){await command(['SET',HELPER_HEARTBEAT_KEY,JSON.stringify(value),'EX','120'])}
 export async function getHelperHeartbeat(){const raw=await command(['GET',HELPER_HEARTBEAT_KEY]);return raw?JSON.parse(raw):null}
+
+const TUNNEL_KEY='homework:desktop:tunnel';
+export async function saveTunnel(value){await command(['SET',TUNNEL_KEY,JSON.stringify(value),'EX','86400'])}
+export async function getTunnel(){const raw=await command(['GET',TUNNEL_KEY]);return raw?JSON.parse(raw):null}

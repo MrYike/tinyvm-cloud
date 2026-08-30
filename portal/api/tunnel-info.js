@@ -1,0 +1,4 @@
+import crypto from 'node:crypto';
+import {hasSession} from './_lib/security.js';
+import {getTunnel} from './_lib/store.js';
+export default async function handler(req,res){res.setHeader('Cache-Control','no-store');if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});if(!hasSession(req))return res.status(401).json({error:'Please sign in again.'});if(!process.env.FILE_BRIDGE_TOKEN)return res.status(503).json({error:'Desktop relay is not configured.'});const tunnel=await getTunnel();if(!tunnel?.url||Date.now()-new Date(tunnel.time).getTime()>86400000)return res.status(503).json({error:'Desktop relay is starting. Try again shortly.'});const expires=Math.floor(Date.now()/1000)+3600;const signature=crypto.createHmac('sha256',process.env.FILE_BRIDGE_TOKEN).update(String(expires)).digest('hex');return res.status(200).json({url:tunnel.url,token:`${expires}.${signature}`})}
