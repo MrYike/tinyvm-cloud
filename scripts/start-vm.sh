@@ -61,7 +61,13 @@ if [[ -n "${FILE_BRIDGE_TOKEN:-}" ]]; then
     sleep 1
   done
   if [[ -n "${TUNNEL_URL:-}" ]]; then
-    curl -fsS -X POST https://homework-study-work-app.vercel.app/api/tunnel-register -H "Authorization: Bearer $FILE_BRIDGE_TOKEN" -H 'Content-Type: application/json' --data "{\"url\":\"$TUNNEL_URL\"}" >/dev/null
+    mkdir -p "$ROOT/runtime"
+    printf '{"url":"%s","time":"%s"}\n' "$TUNNEL_URL" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$ROOT/runtime/tunnel.json"
+    git -C "$ROOT" add runtime/tunnel.json
+    if ! git -C "$ROOT" diff --cached --quiet; then
+      git -C "$ROOT" commit -m "Update desktop relay endpoint"
+      git -C "$ROOT" push
+    fi
     echo "Protected Vercel desktop relay registered."
   else
     echo "Desktop relay did not return an address yet."
