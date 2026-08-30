@@ -27,21 +27,25 @@ else
   echo "CloudDrive helper is waiting for FILE_BRIDGE_TOKEN."
 fi
 
-if [[ ! -x "$CONFIG/firefox/firefox" ]]; then
+FIREFOX_BINARY="$(find "$CONFIG/firefox" -maxdepth 3 -type f -name firefox -perm -111 2>/dev/null | head -1 || true)"
+if [[ -z "$FIREFOX_BINARY" ]]; then
   mkdir -p "$CONFIG/firefox-download"
   FIREFOX_VERSION="$(curl -fsS https://product-details.mozilla.org/1.0/firefox_versions.json | sed -n 's/.*"LATEST_FIREFOX_VERSION": *"\([^"]*\)".*/\1/p')"
   [[ -n "$FIREFOX_VERSION" ]] || { echo "Could not determine the current Firefox version."; exit 1; }
   curl -fL --retry 5 "https://download-installer.cdn.mozilla.net/pub/firefox/releases/$FIREFOX_VERSION/linux-x86_64/en-US/firefox-$FIREFOX_VERSION.tar.xz" -o "$CONFIG/firefox-download/firefox.tar.xz"
   tar -xJf "$CONFIG/firefox-download/firefox.tar.xz" -C "$CONFIG"
   rm -f "$CONFIG/firefox-download/firefox.tar.xz"
+  FIREFOX_BINARY="$(find "$CONFIG/firefox" -maxdepth 3 -type f -name firefox -perm -111 | head -1)"
 fi
+[[ -n "$FIREFOX_BINARY" ]] || { echo "Firefox was downloaded but its launcher was not found."; exit 1; }
+ln -sfn "/config/${FIREFOX_BINARY#"$CONFIG/"}" "$CONFIG/firefox-launcher"
 mkdir -p "$CONFIG/Desktop"
 cat > "$CONFIG/Desktop/firefox.desktop" <<'EOF'
 [Desktop Entry]
 Type=Application
 Name=Firefox
-Exec=/config/firefox/firefox
-Icon=/config/firefox/browser/chrome/icons/default/default128.png
+Exec=/config/firefox-launcher
+Icon=firefox
 Terminal=false
 Categories=Network;WebBrowser;
 EOF
